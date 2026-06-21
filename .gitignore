@@ -1,0 +1,12 @@
+# 1. 隱私與機密（最重要！）
+.env
+grant.sql
+revoke.sql
+# 系統日誌
+*.log
+
+static/dataset_images/
+
+# 2. Python 編譯與暫存檔
+__pycache__/
+.venv/

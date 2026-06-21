@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DressGPT Advanced 標註主控台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #f8f9fa; 
+            height: 100vh; 
+            overflow: hidden; 
+            margin: 0;
+            padding: 2vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .workbench-layout {
+            display: grid;
+            grid-template-columns: calc(92vh * 9 / 16) 1fr; 
+            gap: 25px;
+            width: 96vw;
+            height: 92vh;
+        }
+
+        .photo-frame {
+            background: #ffffff;
+            border: 3px solid #000000;
+            border-radius: 30px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px;
+            height: 100%;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+        
+        #previewImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            border-radius: 20px;
+        }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .panel-row {
+            background: #ffffff;
+            border: 3px solid #000000;
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-id-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* 專屬維度按鈕群組樣式 */
+        .dim-btn {
+            font-weight: bold;
+            font-size: 0.95rem;
+            padding: 6px 14px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+
+        /* 性別：男(天空藍) / 女(亮紫) */
+        .btn-male { border-color: #00a2e8; color: #00a2e8; }
+        .btn-male.active { background: #00a2e8; color: white; box-shadow: 0 0 8px rgba(0,162,232,0.4); }
+        .btn-female { border-color: #a349a4; color: #a349a4; }
+        .btn-female.active { background: #a349a4; color: white; box-shadow: 0 0 8px rgba(163,73,164,0.4); }
+
+        /* 季節：夏(橘) / 春秋(綠) / 冬(深藍) */
+        .btn-summer { border-color: #ff7f27; color: #ff7f27; }
+        .btn-summer.active { background: #ff7f27; color: white; box-shadow: 0 0 8px rgba(255,127,39,0.4); }
+        .btn-spring-autumn { border-color: #22b14c; color: #22b14c; }
+        .btn-spring-autumn.active { background: #22b14c; color: white; box-shadow: 0 0 8px rgba(34,177,76,0.4); }
+        .btn-winter { border-color: #3f48cc; color: #3f48cc; }
+        .btn-winter.active { background: #3f48cc; color: white; box-shadow: 0 0 8px rgba(63,72,204,0.4); }
+
+        /* 正式度：休閒(黑) / 正式(黑) */
+        .btn-casual { border-color: #000000; color: #000000; }
+        .btn-casual.active { background: #000000; color: white; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
+        .btn-formal { border-color: #000000; color: #000000; }
+        .btn-formal.active { background: #000000; color: white; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
+
+        /* 雙軌拉扯面板外框 */
+        .dynamic-attribute-zone {
+            flex-direction: column;
+            align-items: stretch !important;
+            min-height: 275px;
+        }
+
+        .score-zone {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+
+        .slider-unified::-webkit-slider-runnable-track { 
+            background: linear-gradient(to right, #dc3545 0%, #cccccc 50%, #28a745 100%) !important; 
+            height: 6px; 
+            border-radius: 3px; 
+        }
+
+        .save-master-btn {
+            background: #28a745;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 15px;
+            padding: 10px;
+            border: 3px solid #1e7e34;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="workbench-layout">
+    <div class="photo-frame" id="photoFrame">
+        <img id="previewImage" src="" alt="照片載入中...">
+    </div>
+
+    <div class="control-panel">
+        
+        <div class="panel-row justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <div class="nav-id-text me-1">ID = <span id="displayIdText" class="text-primary">0001</span></div>
+                <button class="btn btn-dark btn-sm px-2" id="prevBtn">◀</button>
+                <input type="text" class="form-control form-control-sm text-center fw-bold" id="jumpIdInput" value="0001" style="width: 55px;">
+                <button class="btn btn-primary btn-sm" id="jumpBtn">跳轉</button>
+                <button class="btn btn-dark btn-sm px-2" id="nextBtn">▶</button>
+            </div>
+            
+            <div class="d-flex gap-2" id="genderGroup">
+                <button class="dim-btn btn-male active" data-value="male">男</button>
+                <button class="dim-btn btn-female" data-value="female">女</button>
+            </div>
+        </div>
+
+        <div class="panel-row justify-content-between">
+            <div class="d-flex gap-2" id="seasonGroup">
+                <button class="dim-btn btn-summer" data-value="summer">夏季</button>
+                <button class="dim-btn btn-spring-autumn active" data-value="spring_autumn">春秋季</button>
+                <button class="dim-btn btn-winter" data-value="winter">冬季</button>
+            </div>
+            
+            <div class="d-flex gap-2" id="formalityGroup">
+                <button class="dim-btn btn-casual active" data-value="casual">休閒</button>
+                <button class="dim-btn btn-formal" data-value="formal">正式</button>
+            </div>
+        </div>
+
+        <div class="panel-row justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                <label class="fw-bold text-nowrap m-0">主風格：</label>
+                <select class="form-select" id="mainStyleSelect">
+                    <option value="">— 請選擇主風格 —</option>
+                </select>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" id="addStyleBtn">＋新增</button>
+        </div>
+
+        <div class="panel-row dynamic-attribute-zone">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="fw-bold text-dark">📊 屬性拉扯抉擇面板 (左右共 8 槽位)</div>
+                <button class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.8rem;" id="addAttrBtn">＋新增自訂標籤</button>
+            </div>
+            
+            <div class="row g-3 flex-grow-1">
+                <div class="col-6 border-end">
+                    <div class="text-success fw-bold text-center mb-2" style="font-size:0.85rem;">🟢 正向加分屬性</div>
+                    <div id="positiveSlotContainer"></div>
+                </div>
+                
+                <div class="col-6">
+                    <div class="text-danger fw-bold text-center mb-2" style="font-size:0.85rem;">🔴 負向扣分缺陷</div>
+                    <div id="negativeSlotContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-row score-zone">
+            <div class="d-flex justify-content-between w-100 mb-1 fw-bold">
+                <div>
+                    <span>overall score:</span>
+                    <span id="suggestedScoreZone" class="text-muted ms-2 fw-normal" style="font-size: 0.9rem;">
+                        (建議: <span id="suggestedScoreBadge" class="fw-bold text-success">5.00 ~ 5.25</span>)
+                    </span>
+                </div>
+                <span id="scoreBadge" class="fs-5 text-primary">5.00</span>
+            </div>
+            <input type="range" class="form-range slider-unified" id="scoreSlider" min="0.00" max="10.00" step="0.05" value="5.00">
+        </div>
+
+        <button class="save-master-btn" id="saveBtn">儲存當前標註</button>
+    </div>
+</div>
+
+<script>
+    let currentIdNum = 1; 
+    
+    // 當前多維度狀態暫存變數
+    let globalGender = "male";
+    let globalSeason = "spring_autumn";
+    let globalFormality = "casual";
+    
+    // 從資料庫撈出的選單資料快取
+    let OPTION_LIBRARY = {
+        styles: [],
+        positive_options: [],
+        negative_options: []
+    };
+
+    // 同步點擊事件到全域狀態變數並切換主底色
+    function setupButtonGroup(groupId, callback) {
+        const container = document.getElementById(groupId);
+        const buttons = container.querySelectorAll(".dim-btn");
+        buttons.forEach(btn => {
+            btn.onclick = function() {
+                buttons.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                callback(this.getAttribute("data-value"));
+            };
+        });
+    }
+
+    // 初始化設定三大維度按鈕組
+    setupButtonGroup("genderGroup", (val) => { globalGender = val; });
+    setupButtonGroup("seasonGroup", (val) => { globalSeason = val; });
+    setupButtonGroup("formalityGroup", (val) => { globalFormality = val; });
+
+    // 用程式碼動態切換按鈕高亮狀態（讀取舊資料庫時用）
+    function syncButtonUI(groupId, activeVal) {
+        const container = document.getElementById(groupId);
+        const buttons = container.querySelectorAll(".dim-btn");
+        buttons.forEach(b => {
+            if (b.getAttribute("data-value") === activeVal) {
+                b.classList.add("active");
+            } else {
+                b.classList.remove("active");
+            }
+        });
+    }
+
+    // 向後端請求最新選單清單
+    async function loadOptionsFromDatabase() {
+        try {
+            const response = await fetch('/api/get_options');
+            const res = await response.json();
+            if (res.status === "success") {
+                OPTION_LIBRARY.styles = res.styles;
+                OPTION_LIBRARY.positive_options = res.positive_options;
+                OPTION_LIBRARY.negative_options = res.negative_options;
+                
+                renderMainStyleOptions();
+                refreshAllSlotOptions();
+            }
+        } catch (err) {
+            console.error("無法從資料庫撈取選單清單", err);
+        }
+    }
+
+    function renderMainStyleOptions() {
+        const select = document.getElementById("mainStyleSelect");
+        const currentVal = select.value;
+        let html = '<option value="">— 請選擇主風格 —</option>';
+        OPTION_LIBRARY.styles.forEach(style => {
+            html += `<option value="${style}">${style}</option>`;
+        });
+        select.innerHTML = html;
+        select.value = currentVal;
+    }
+
+    // 同時建構左 4 槽位與右 4 槽位
+    function initAttributeSlots() {
+        const posContainer = document.getElementById("positiveSlotContainer");
+        const negContainer = document.getElementById("negativeSlotContainer");
+        
+        posContainer.innerHTML = "";
+        negContainer.innerHTML = "";
+        
+        // 渲染左側 4 個正向槽位
+        for (let i = 0; i < 4; i++) {
+            posContainer.appendChild(createSlotRow("pos", i));
+        }
+        // 渲染右側 4 個負向槽位
+        for (let i = 0; i < 4; i++) {
+            negContainer.appendChild(createSlotRow("neg", i));
+        }
+
+        // 綁定所有槽位的聯動監聽
+        bindSlotListeners("pos");
+        bindSlotListeners("neg");
+    }
+
+    function createSlotRow(type, i) {
+        const row = document.createElement("div");
+        row.className = "row g-1 align-items-center mb-2";
+        row.innerHTML = `
+            <div class="col-5">
+                <select class="form-select form-select-sm ${type}-slot-select" data-slot="${i}">
+                    <option value="">— 空白 —</option>
+                </select>
+            </div>
+            <div class="col-5">
+                <input type="range" class="form-range ${type}-slot-slider" data-slot="${i}" min="0.00" max="10.00" step="0.1" value="0.0" disabled>
+            </div>
+            <div class="col-2 text-end">
+                <span class="badge bg-light text-dark border ${type}-slot-val" id="${type}ValBadge_${i}" style="font-size:0.75rem; padding:3px 5px;">0.0</span>
+            </div>
+        `;
+        return row;
+    }
+
+    function bindSlotListeners(type) {
+        document.querySelectorAll(`.${type}-slot-select`).forEach(select => {
+            select.onchange = function() {
+                const slotIdx = this.getAttribute("data-slot");
+                const slider = document.querySelector(`.${type}-slot-slider[data-slot="${slotIdx}"]`);
+                const badge = document.getElementById(`${type}ValBadge_${slotIdx}`);
+                
+                if (this.value === "") {
+                    slider.disabled = true;
+                    slider.value = "0.0";
+                    badge.innerText = "0.0";
+                } else {
+                    slider.disabled = false;
+                }
+                updateSuggestedScore();
+            };
+        });
+
+        document.querySelectorAll(`.${type}-slot-slider`).forEach(slider => {
+            slider.oninput = function() {
+                const slotIdx = this.getAttribute("data-slot");
+                document.getElementById(`${type}ValBadge_${slotIdx}`).innerText = parseFloat(this.value).toFixed(1);
+                updateSuggestedScore();
+            };
+        });
+    }
+
+    // 分流填充左右兩邊的選單選項
+    function refreshAllSlotOptions() {
+        // 刷新正向選單
+        document.querySelectorAll(".pos-slot-select").forEach(select => {
+            const savedVal = select.value;
+            let html = '<option value="">— 空白 —</option>';
+            OPTION_LIBRARY.positive_options.forEach(opt => { html += `<option value="${opt}">${opt}</option>`; });
+            select.innerHTML = html;
+            if (OPTION_LIBRARY.positive_options.includes(savedVal)) select.value = savedVal;
+        });
+
+        // 刷新負向選單
+        document.querySelectorAll(".neg-slot-select").forEach(select => {
+            const savedVal = select.value;
+            let html = '<option value="">— 空白 —</option>';
+            OPTION_LIBRARY.negative_options.forEach(opt => { html += `<option value="${opt}">${opt}</option>`; });
+            select.innerHTML = html;
+            if (OPTION_LIBRARY.negative_options.includes(savedVal)) select.value = savedVal;
+        });
+    }
+
+    async function handleAddCustomOption(type, value) {
+        try {
+            const response = await fetch('/api/add_custom_option', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type, value: value })
+            });
+            const res = await response.json();
+            if (res.status === "success") {
+                await loadOptionsFromDatabase();
+            } else {
+                alert(res.message);
+            }
+        } catch (err) {
+            alert("與伺服器通訊失敗");
+        }
+    }
+
+    function padId(num) {
+        return String(num).padStart(4, '0');
+    }
+
+    // 讀取資料 API
+    async function fetchImageData(idStr) {
+        try {
+            const response = await fetch('/api/get_image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_id: idStr })
+            });
+            const res = await response.json();
+            
+            if (res.status === "success") {
+                const data = res.data;
+                currentIdNum = parseInt(data.image_id, 10);
+                
+                document.getElementById("displayIdText").innerText = data.image_id;
+                document.getElementById("jumpIdInput").value = data.image_id;
+                document.getElementById("previewImage").src = `/${data.image_path}?t=${new Date().getTime()}`;
+                
+                // 同步三大核心基礎維度按鈕
+                globalGender = data.gender || "male";
+                globalSeason = data.season || "spring_autumn";
+                globalFormality = data.formality || "casual";
+                syncButtonUI("genderGroup", globalGender);
+                syncButtonUI("seasonGroup", globalSeason);
+                syncButtonUI("formalityGroup", globalFormality);
+                
+                // 同步評分主滑桿數值
+                const mainScore = data.overall_score !== undefined ? data.overall_score : 5.00;
+                document.getElementById("scoreSlider").value = mainScore;
+                document.getElementById("scoreBadge").innerText = mainScore.toFixed(2);
+                
+                setTimeout(() => {
+                    document.getElementById("mainStyleSelect").value = data.main_style || "";
+                }, 10);
+                
+                // 徹底重置清空左右所有的槽位狀態
+                document.querySelectorAll(".pos-slot-select, .neg-slot-select").forEach(s => s.value = "");
+                document.querySelectorAll(".pos-slot-slider, .neg-slot-slider").forEach(s => { s.disabled = true; s.value = "0.0"; });
+                document.querySelectorAll(".pos-slot-val, .neg-slot-val").forEach(b => b.innerText = "0.0");
+
+                // 根據資料庫撈出的屬性名，智能分流回填到對應的左側或右側槽位
+                if (data.attributes) {
+                    let pIdx = 0;
+                    let nIdx = 0;
+                    Object.keys(data.attributes).forEach(key => {
+                        const val = data.attributes[key];
+                        if (OPTION_LIBRARY.positive_options.includes(key) && pIdx < 4) {
+                            const select = document.querySelector(`.pos-slot-select[data-slot="${pIdx}"]`);
+                            const slider = document.querySelector(`.pos-slot-slider[data-slot="${pIdx}"]`);
+                            select.value = key;
+                            slider.disabled = false;
+                            slider.value = val;
+                            document.getElementById(`posValBadge_${pIdx}`).innerText = parseFloat(val).toFixed(1);
+                            pIdx++;
+                        } else if (OPTION_LIBRARY.negative_options.includes(key) && nIdx < 4) {
+                            const select = document.querySelector(`.neg-slot-select[data-slot="${nIdx}"]`);
+                            const slider = document.querySelector(`.neg-slot-slider[data-slot="${nIdx}"]`);
+                            select.value = key;
+                            slider.disabled = false;
+                            slider.value = val;
+                            document.getElementById(`negValBadge_${nIdx}`).innerText = parseFloat(val).toFixed(1);
+                            nIdx++;
+                        }
+                    });
+                }
+
+                setTimeout(() => { updateSuggestedScore(); }, 20);
+            } else {
+                alert("提示: " + res.message);
+            }
+        } catch (err) {
+            console.error("讀取通訊發生異常", err);
+        }
+    }
+
+    // 儲存資料 API
+    async function saveLabel() {
+        const idStr = padId(currentIdNum);
+        const attributes = {};
+        
+        // 抓取左側正向屬性
+        for (let i = 0; i < 4; i++) {
+            const select = document.querySelector(`.pos-slot-select[data-slot="${i}"]`);
+            const slider = document.querySelector(`.pos-slot-slider[data-slot="${i}"]`);
+            if (select && select.value !== "") attributes[select.value] = parseFloat(slider.value);
+        }
+        // 抓取右側負向屬性
+        for (let i = 0; i < 4; i++) {
+            const select = document.querySelector(`.neg-slot-select[data-slot="${i}"]`);
+            const slider = document.querySelector(`.neg-slot-slider[data-slot="${i}"]`);
+            if (select && select.value !== "") attributes[select.value] = parseFloat(slider.value);
+        }
+
+        const payload = {
+            image_id: idStr,
+            gender: globalGender,
+            season: globalSeason,
+            formality: globalFormality,
+            overall_score: parseFloat(document.getElementById("scoreSlider").value),
+            main_style: document.getElementById("mainStyleSelect").value,
+            attributes: attributes
+        };
+
+        try {
+            const response = await fetch('/api/save_label', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+            if (res.status === "success") {
+                const frame = document.getElementById("photoFrame");
+                frame.style.borderColor = "#28a745";
+                setTimeout(() => frame.style.borderColor = "#000000", 300);
+            } else {
+                alert("儲存失敗: " + res.message);
+            }
+        } catch (err) {
+            alert("後端通訊中斷");
+        }
+    }
+
+    document.getElementById("scoreSlider").oninput = function() {
+        document.getElementById("scoreBadge").innerText = parseFloat(this.value).toFixed(2);
+    };
+
+    document.getElementById("prevBtn").onclick = () => { if(currentIdNum > 1) fetchImageData(padId(currentIdNum - 1)); };
+    document.getElementById("nextBtn").onclick = () => { fetchImageData(padId(currentIdNum + 1)); };
+    document.getElementById("saveBtn").onclick = saveLabel;
+    
+    document.getElementById("jumpBtn").onclick = () => {
+        const val = parseInt(document.getElementById("jumpIdInput").value, 10);
+        if (!isNaN(val)) fetchImageData(padId(val));
+    };
+
+    document.getElementById("addStyleBtn").onclick = () => {
+        const newValue = prompt("請輸入想要新增的【自訂主風格】名稱：");
+        if (newValue && newValue.trim() !== "") handleAddCustomOption("style", newValue.trim());
+    };
+    
+    document.getElementById("addAttrBtn").onclick = () => {
+        const newValue = prompt("請輸入想要新增的【自訂屬性標籤】名稱：");
+        if (!newValue || !newValue.trim()) return;
+        const isPositive = confirm(`您輸入了：${newValue}\n\n這是一個【正向加分屬性】嗎？\n(點擊「確定」歸類為正面加分，點擊「取消」歸類為負面缺陷)`);
+        handleAddCustomOption(isPositive ? "positive_attr" : "negative_attr", newValue.trim());
+    };
+
+    function updateSuggestedScore() {
+        let totalPoints = 0;
+        
+        // 1. 處理左側 4 個正向加分屬性
+        for (let i = 0; i < 4; i++) {
+            const select = document.querySelector(`.pos-slot-select[data-slot="${i}"]`);
+            const slider = document.querySelector(`.pos-slot-slider[data-slot="${i}"]`);
+            
+            if (select && select.value !== "") {
+                const val = parseFloat(slider.value);
+                if (val > 0) {
+                    let multiplier = 1; // C 級 (0.1 ~ 4.9)
+                    if (val >= 5.0 && val <= 7.9) {
+                        multiplier = 2; // B 級
+                    } else if (val >= 8.0 && val <= 10.0) {
+                        multiplier = 3; // A 級
+                    }
+                    totalPoints += (val * multiplier);
+                }
+            }
+        }
+        
+        // 2. 處理右側 4 個負向扣分缺陷
+        for (let i = 0; i < 4; i++) {
+            const select = document.querySelector(`.neg-slot-select[data-slot="${i}"]`);
+            const slider = document.querySelector(`.neg-slot-slider[data-slot="${i}"]`);
+            
+            if (select && select.value !== "") {
+                const val = parseFloat(slider.value);
+                if (val > 0) {
+                    let multiplier = 1;
+                    if (val >= 5.0 && val <= 7.9) {
+                        multiplier = 2;
+                    } else if (val >= 8.0 && val <= 10.0) {
+                        multiplier = 3;
+                    }
+                    totalPoints -= (val * multiplier);
+                }
+            }
+        }
+
+        // 3. 使用線性公式計算建議分數區間（每 5 分為一階，每階變動 0.25 分）
+        let bucket = Math.floor(totalPoints / 5);
+        let scoreLower = 5.00 + bucket * 0.25;
+        
+        // 4. 安全邊界限制，範圍限制在 0.00 ~ 10.00 之間
+        if (scoreLower < 0.00) scoreLower = 0.00;
+        if (scoreLower > 9.75) scoreLower = 9.75;
+        
+        let scoreUpper = scoreLower + 0.25;
+
+        // 5. 即時更新前端畫面
+        const suggestedBadge = document.getElementById("suggestedScoreBadge");
+        if (suggestedBadge) {
+            suggestedBadge.innerText = `${scoreLower.toFixed(2)} ~ ${scoreUpper.toFixed(2)}`;
+        }
+    }
+
+    window.onload = async () => {
+        initAttributeSlots();
+        await loadOptionsFromDatabase();
+        fetchImageData(padId(currentIdNum));
+    };
+</script>
+</body>
+</html>
