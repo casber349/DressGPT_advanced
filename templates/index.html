@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DressGPT - Desktop Layout Modern V4</title>
+    <style>
+        /* 1. 全局重設與高質感畫布設定 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f1f5f9; /* 升級為現代優雅的莫蘭迪淺灰底色 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* 2. 核心大容器：啟動同高對齊機制 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 380px 1fr 380px; /* 🔥 左欄與右欄同步加寬至 380px，營造完美平衡大畫面 */
+            gap: 2rem;
+            width: 100%;
+            max-width: 1440px;
+            align-items: stretch; /* 🔥 核心魔法：強制所有欄位拉伸至完全等高 */
+        }
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            height: 100%; /* 承接 Grid 的等高設定 */
+        }
+
+        /* ==========================================
+           🎨 全新變革：無邊框高質感面板基礎
+           ========================================== */
+        .sketch-block {
+            border: none; /* ❌ 徹底告別大黑框 */
+            border-radius: 1.5rem; /* 更加流暢溫潤的現代圓角 */
+            padding: 1.75rem;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04); /* 輕盈高級的軟陰影 */
+        }
+
+        /* ==========================================
+           【左欄】元件樣式 (放大 9:16 照片區)
+           ========================================== */
+        .file-upload-wrapper { 
+            margin-bottom: -0.5rem; 
+            background: #ffffff;
+            padding: 0.75rem 1.25rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .native-file-input { font-size: 0.9rem; font-weight: bold; color: #475569; }
+        
+        .photo-container {
+            aspect-ratio: 9 / 16; /* 🔒 嚴格鎖定直向 9:16 比例 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1e293b; /* 未上傳時呈現極具科技感的深邃暗色底塊 */
+            overflow: hidden; 
+            padding: 0;       
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        #preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-placeholder {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #94a3b8;
+            letter-spacing: 6px;
+        }
+
+        /* ==========================================
+           【中欄】元件樣式 (多采色塊區)
+           ========================================== */
+        .section-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #1e293b;
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+        
+        /* 推薦篩選面板專屬莫蘭迪底色 */
+        .filter-panel-bg {
+            background-color: #f8fafc; 
+        }
+        
+        .filter-row { display: flex; gap: 0.75rem; margin-bottom: 0.85rem; }
+        .filter-row:last-child { margin-bottom: 0; }
+        
+        /* 篩選器按鈕：全面轉型為輕量化膠囊鈕 */
+        .filter-label {
+            flex: 1;
+            text-align: center;
+            border: 2px solid transparent; 
+            border-radius: 1rem;
+            padding: 0.65rem 0;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            background-color: #ffffff;
+            color: #64748b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .filter-label input { display: none; }
+        
+        /* 動態選取激活樣式：擺脫純黑，改用高飽和活潑色彩 */
+        .gender-m { border-color: #e0f2fe; color: #0284c7; }
+        .gender-m:has(input:checked) { background-color: #0284c7; color: #fff; box-shadow: 0 4px 12px rgba(2,132,199,0.3); }
+        
+        .gender-f { border-color: #fce7f3; color: #b91c1c; }
+        .gender-f:has(input:checked) { background-color: #a349a4; color: #fff; box-shadow: 0 4px 12px rgba(163,73,164,0.3); }
+        
+        .season-summer { border-color: #ffedd5; color: #ea580c; }
+        .season-summer:has(input:checked) { background-color: #ff7f27; color: #fff; box-shadow: 0 4px 12px rgba(255,127,39,0.3); }
+        
+        .season-spring-autumn { border-color: #dcfce7; color: #15803d; }
+        .season-spring-autumn:has(input:checked) { background-color: #22b14c; color: #fff; box-shadow: 0 4px 12px rgba(34,177,76,0.3); }
+        
+        .season-winter { border-color: #e0e7ff; color: #4338ca; }
+        .season-winter:has(input:checked) { background-color: #3f48cc; color: #fff; box-shadow: 0 4px 12px rgba(63,72,204,0.3); }
+        
+        .formality-btn { border-color: #e2e8f0; color: #334155; }
+        .formality-btn:has(input:checked) { background-color: #1e293b; color: #ffffff; box-shadow: 0 4px 12px rgba(30,41,59,0.3); }
+
+        /* 🔥 御用極致奢華藍色微漸層 evaluate 按鈕 */
+        .evaluate-btn-v3 {
+            border: none;
+            border-radius: 1.25rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            font-size: 1.75rem;
+            font-weight: 800;
+            padding: 0.8rem 0;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .evaluate-btn-v3:hover { 
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px -5px rgba(37, 99, 235, 0.4);
+        }
+        .evaluate-btn-v3:active { transform: translateY(1px); }
+
+        /* 屬性面板專屬底色 + 自動填滿剩餘高度 */
+        .attributes-panel {
+            background-color: #ffffff; 
+            flex: 1; /* 🔥 填滿中欄剩餘所有空間，達成底部完美切齊 */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 1.15rem;
+        }
+        .attribute-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 1.25rem; 
+            font-weight: 700; 
+            font-size: 1rem; 
+            padding: 0.5rem 0;
+            transition: color 0.3s ease; 
+        }
+        .attribute-name { width: 3.5rem; color: #475569; }
+        .progress-bar-bg { flex: 1; background-color: #f1f5f9; height: 0.65rem; border-radius: 9999px; overflow: hidden; }
+        .progress-bar-fill { 
+            height: 100%; 
+            border-radius: 9999px; 
+            width: 0%; 
+            transition: width 0.8s cubic-bezier(0.1, 1, 0.1, 1); 
+        }
+        .attribute-val { width: 2.5rem; text-align: right; font-weight: 800; }
+
+        /* 強度級別優雅高級配色 */
+        .intensity-high { color: #a21caf; }
+        .intensity-high .progress-bar-fill { background-color: #c084fc; }
+        .intensity-mid { color: #0284c7; }
+        .intensity-mid .progress-bar-fill { background-color: #38bdf8; }
+        .intensity-low { color: #16a34a; }
+        .intensity-low .progress-bar-fill { background-color: #4ade80; }
+
+        /* ==========================================
+           【右欄】元件樣式
+           ========================================== */
+        /* 分數區塊：採用尊榮感高質感輕天藍色塊 */
+        .score-block { 
+            text-align: center; 
+            padding: 2.25rem 1.5rem; 
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%); 
+        }
+        .score-title { color: #1e40af; font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .score-num { font-size: 4.5rem; font-weight: 900; color: #1e3a8a; margin: 0.25rem 0; letter-spacing: -1px; }
+        .style-type { font-size: 1rem; font-weight: 700; color: #60a5fa; margin-top: 0.5rem; }
+        .style-name { font-size: 2rem; font-weight: 800; color: #1e3a8a; margin-top: 0.15rem; }
+
+        /* 推薦榜樣面板：自動填滿剩餘高度 */
+        .recommend-panel-bg {
+            background-color: #ffffff;
+            flex: 1; /* 🔥 填滿右欄剩餘所有空間，與中欄底部同步切齊 */
+            display: flex;
+            flex-direction: column;
+        }
+        .recommend-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1rem; 
+            margin-top: auto; /* 聰明的置底排版 */
+            margin-bottom: auto; 
+        }
+        .neighbor-9-16-box {
+            border: none; 
+            border-radius: 1rem;
+            aspect-ratio: 9 / 16;
+            background-color: #f1f5f9;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .neighbor-9-16-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 🔒 初始隱藏 */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- 📂 左欄 -->
+        <div class="column-flex">
+            <div class="file-upload-wrapper">
+                <input type="file" id="photo-input" class="native-file-input" accept="image/*">
+            </div>
+            <div class="sketch-block photo-container" id="photo-display-zone">
+                <p class="photo-placeholder">照片</p>
+            </div>
+        </div>
+
+        <!-- 🎛️ 中欄 -->
+        <div class="column-flex">
+            <!-- 區塊 2：篩選器 -->
+            <div class="sketch-block filter-panel-bg">
+                <p class="section-title">推薦篩選</p>
+                <div class="filter-row">
+                    <label class="filter-label gender-m"><input type="radio" name="gender" value="男" checked> 男</label>
+                    <label class="filter-label gender-f"><input type="radio" name="gender" value="女"> 女</label>
+                </div>
+                <div class="filter-row">
+                    <label class="filter-label season-summer"><input type="checkbox" name="seasons" value="夏季"> 夏季</label>
+                    <label class="filter-label season-spring-autumn"><input type="checkbox" name="seasons" value="春秋季"> 春秋季</label>
+                    <label class="filter-label season-winter"><input type="checkbox" name="seasons" value="冬季"> 冬季</label>
+                </div>
+                <div class="filter-row">
+                    <label class="filter-label formality-btn"><input type="checkbox" name="formality" value="休閒"> 休閒</label>
+                    <label class="filter-label formality-btn"><input type="checkbox" name="formality" value="正式"> 正式</label>
+                </div>
+            </div>
+
+            <!-- 區塊 2.5：Evaluate 按鈕 -->
+            <button class="evaluate-btn-v3" id="btn-evaluate">evaluate</button>
+
+            <!-- 區塊 4：強度分級屬性面板 -->
+            <div class="sketch-block attributes-panel hidden" id="block-attributes">
+                <p class="section-title">屬性辨識</p>
+                
+                <!-- 第一列 -->
+                <div class="attribute-row intensity-high" id="attr-row-1">
+                    <span class="attribute-name" id="attr-name-1">清爽</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="attr-bar-1" style="width: 100%"></div>
+                    </div>
+                    <span class="attribute-val" id="attr-val-1">10.0</span>
+                </div>
+
+                <!-- 第二列 -->
+                <div class="attribute-row intensity-mid" id="attr-row-2">
+                    <span class="attribute-name" id="attr-name-2">帥氣</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="attr-bar-2" style="width: 75%"></div>
+                    </div>
+                    <span class="attribute-val" id="attr-val-2">7.5</span>
+                </div>
+
+                <!-- 第三列 -->
+                <div class="attribute-row intensity-mid" id="attr-row-3">
+                    <span class="attribute-name" id="attr-name-3">自信</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="attr-bar-3" style="width: 60%"></div>
+                    </div>
+                    <span class="attribute-val" id="attr-val-3">6.0</span>
+                </div>
+
+                <!-- 第四列 -->
+                <div class="attribute-row intensity-low" id="attr-row-4">
+                    <span class="attribute-name" id="attr-name-4">乾淨</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="attr-bar-4" style="width: 45%"></div>
+                    </div>
+                    <span class="attribute-val" id="attr-val-4">4.5</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📊 右欄 -->
+        <div class="column-flex">
+            <!-- 區塊 3：分數與風格 -->
+            <div class="sketch-block score-block hidden" id="block-score">
+                <p class="score-title">overall score</p>
+                <p class="score-num"><span id="score-text">7.20</span> / 10</p>
+                <p class="style-type" id="style-type-label">主風格 (潛在風格)</p>
+                <p class="style-name" id="style-name-text">基本款 (運動風)</p>
+            </div>
+
+            <!-- 區塊 5：推薦榜樣 -->
+            <div class="sketch-block recommend-panel-bg hidden" id="block-recommend">
+                <p class="section-title">推薦榜樣</p>
+                <div class="recommend-grid" id="recommend-image-container">
+                    <div class="neighbor-9-16-box"></div>
+                    <div class="neighbor-9-16-box"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+    🧠 JavaScript 核心控制神經（完好無損，完美兼容）
+    ========================================== -->
+    <script>
+        let globalSelectedFile = null; 
+
+        document.getElementById('photo-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                globalSelectedFile = file; 
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const displayZone = document.getElementById('photo-display-zone');
+                    displayZone.innerHTML = `<img src="${event.target.result}" id="preview-img" alt="Uploaded Photo">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateAttributeDynamic(rowIndex, tagName, score) {
+            const rowElement = document.getElementById(`attr-row-${rowIndex}`);
+            const nameElement = document.getElementById(`attr-name-${rowIndex}`);
+            const valElement = document.getElementById(`attr-val-${rowIndex}`);
+            const barElement = document.getElementById(`attr-bar-${rowIndex}`);
+
+            if (!rowElement || !nameElement || !valElement || !barElement) return;
+
+            nameElement.innerText = tagName;
+            valElement.innerText = score.toFixed(1);
+            barElement.style.width = `${score * 10}%`;
+
+            rowElement.classList.remove('intensity-high', 'intensity-mid', 'intensity-low');
+
+            if (score >= 8.0) {
+                rowElement.classList.add('intensity-high');
+            } else if (score >= 5.0) {
+                rowElement.classList.add('intensity-mid');
+            } else {
+                rowElement.classList.add('intensity-low');
+            }
+        }
+
+        document.getElementById('btn-evaluate').addEventListener('click', function() {
+            if (!globalSelectedFile) {
+                alert("請先在左上角選擇一張穿搭照片再進行評估！");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('photo', globalSelectedFile);
+            
+            const genderActive = document.querySelector('input[name="gender"]:checked');
+            if(genderActive) formData.append('gender', genderActive.value);
+
+            document.querySelectorAll('input[name="seasons"]:checked').forEach(cb => {
+                formData.append('seasons', cb.value);
+            });
+
+            document.querySelectorAll('input[name="formality"]:checked').forEach(cb => {
+                formData.append('formality', cb.value);
+            });
+
+            const btn = this;
+            btn.innerText = "Evaluating...";
+            btn.disabled = true;
+
+            fetch('/evaluate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('網頁回應錯誤，請確認後端是否正常。');
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('block-attributes').classList.remove('hidden');
+                document.getElementById('block-score').classList.remove('hidden');
+                document.getElementById('block-recommend').classList.remove('hidden');
+
+                document.getElementById('score-text').innerText = data.score.toFixed(2);
+                document.getElementById('style-name-text').innerText = `${data.main_style} (${data.sub_style})`;
+
+                const maxRows = 4;
+                const attributes = data.attributes || [];
+
+                for (let i = 1; i <= maxRows; i++) {
+                    const rowElement = document.getElementById(`attr-row-${i}`);
+                    
+                    if (i <= attributes.length) {
+                        const attr = attributes[i - 1];
+                        if (rowElement) rowElement.style.display = ''; 
+                        
+                        const nameElement = document.getElementById(`attr-name-${i}`);
+                        const valElement = document.getElementById(`attr-val-${i}`);
+                        const barElement = document.getElementById(`attr-bar-${i}`);
+
+                        if (nameElement) nameElement.innerText = attr.name;
+                        if (valElement) valElement.innerText = attr.score.toFixed(1);
+                        if (barElement) barElement.style.width = `${attr.score * 10}%`;
+
+                        if (rowElement) {
+                            rowElement.classList.remove('intensity-high', 'intensity-mid', 'intensity-low');
+                            if (attr.score >= 8.0) {
+                                rowElement.classList.add('intensity-high');
+                            } else if (attr.score >= 5.0) {
+                                rowElement.classList.add('intensity-mid');
+                            } else {
+                                rowElement.classList.add('intensity-low');
+                            }
+                        }
+                    } else {
+                        if (rowElement) rowElement.style.display = 'none';
+                    }
+                }
+
+                const recContainer = document.getElementById('recommend-image-container');
+                if (recContainer && data.recommendations) {
+                    recContainer.innerHTML = ''; 
+                    
+                    data.recommendations.forEach(imgUrl => {
+                        recContainer.innerHTML += `
+                            <div class="neighbor-9-16-box">
+                                <img src="${imgUrl}" alt="推薦榜樣">
+                            </div>
+                        `;
+                    });
+                }
+
+                console.log("模型資料評估成功！", data);
+            })
+            .catch(err => {
+                alert(err.message);
+            })
+            .finally(() => {
+                btn.innerText = "evaluate";
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

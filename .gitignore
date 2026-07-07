@@ -6,7 +6,13 @@ revoke.sql
 *.log
 
 static/dataset_images/
+static/uploads/
 
 # 2. Python 編譯與暫存檔
 __pycache__/
 .venv/
+
+# 3. 模型們與訓練log
+checkpoints/
+*.pt
+*log.txt
